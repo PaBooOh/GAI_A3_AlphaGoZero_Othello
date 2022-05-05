@@ -1,0 +1,8 @@
+ADD_DIRICHLET_WITH_EXPANSION = False  # 添加狄利克雷噪声在扩展过程的节点上
+DIRICHLET_ALPHA = 0.15
+DIRICHLET_WEIGHT = 0.25
+IS_ALTERNATIVE_TEMPERATURE = True
+FIRST_STEP_NUM = 12  # 与temperature系数结合,决定mcts搜索完毕后选择一步棋的探索度
+
+1500局
+loss=2.0
