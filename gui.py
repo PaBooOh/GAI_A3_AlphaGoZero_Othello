@@ -248,9 +248,13 @@ class GUI:
             else:
                 text = "Error occured in {} status!".format(mode)
         elif mode == 'ha':
-            text = "AI wins!" if status != 3 else "Draw"
+            # print(self.game.get_current_player_id())
+            if self.game.get_current_player_id() == 1:
+                text = "AI wins!" if status != 3 else "Draw"
+            else:
+                text = "You win!" if status != 3 else "Draw"
         else:
-            text = 'Error occured in mode!'
+            text = 'Error occurred in mode!'
         return text
 
     """
