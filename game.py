@@ -173,7 +173,7 @@ class Game:
     def flip(self, tile, flips, loc_y, loc_x):
         """Flip the stones"""
         self.board[loc_y][loc_x] = tile
-        for x, y in flips:  # 需要翻转的棋子进行变色
+        for x, y in flips:
             self.board[x][y] = tile
 
     def move(self, move, flips=None):
