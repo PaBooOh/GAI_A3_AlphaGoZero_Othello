@@ -6,19 +6,19 @@ from network import resnet, convnet
 
 if __name__ == "__main__":
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>GUI界面<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    # 初始化棋盘数据(棋盘大小, 输赢判断等)
+    # Init game
     game = Game(board_size=config.GUI_BOARD_SIZE)
-    # 初始化游戏数据(gui界面实现,人机对弈,自我训练等)
+    # Init gui and bring the core of the game to it
     gui = GUI(game)
-    # 创建神经网络用于辅助AI的mcts的部分搜索过程（二选一）
+    # Build neural network for MCTS for human vs AI mode
     if config.AI_NET_TYPE == 'cnn':
-        net = convnet.NetFunction(config.TRAIN_BOARD_SIZE, model_path=config.AI_CNN_MODEL_PATH)  # 普通cnn网络
+        net = convnet.NetFunction(config.TRAIN_BOARD_SIZE, model_path=config.AI_CNN_MODEL_PATH)  # Classic convolution network
     elif config.AI_NET_TYPE == 'resnet':
-        net = resnet.NetFunction(config.TRAIN_BOARD_SIZE, model_path=config.AI_RESNET_MODEL_PATH)  # resnet网络
+        net = resnet.NetFunction(config.TRAIN_BOARD_SIZE, model_path=config.AI_RESNET_MODEL_PATH)  # Residual network
     else:
         net = None
-    # 创建AI
+    # Create a AI player based on MCTS and nn
     mcts_player = MCTSPlayer(net.get_policy_value_for_mcts, playout_num=config.AI_MCTS_PLAYOUT_NUM)
-    # 开启GUI画面
+    # Open GUI
     gui.start_game(mcts_player)
 

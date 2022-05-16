@@ -10,33 +10,31 @@ from mcts import MCTSPlayer
 
 class GUI:
     def __init__(self, board_info):
-        self.game: Game = board_info
-        self.who_first: Optional[str] = None
-        self.allow_human_click = False
+        self.game: Game = board_info  # get the rule of the game for checking the validation of the human's actions.
+        self.who_first: Optional[str] = None  # define which player to first put the black stone
+        self.allow_human_click = False  # permission that human player (me) can click on the gui board to put a stone
 
-    # 画棋盘和网格
+    # Initially, draw cross
     def gui_draw_cross(self, x, y):
-        cross_scale = 1.5  # 交叉轴"+"的长度
-        # 边界坐标
+        cross_scale = 1.5  # cross scale '+'
+        # define boundary coordinates
         screen_x, screen_y = self.standard_size * (x + 1), self.standard_size * (y + 1)
-        # 画棋盘(a,b,c,d) -> (a,b)左上角坐标 (c,d)右下角坐标
+        # draw cell consisting of four cross
         self.gui_board.create_rectangle(screen_y - self.cross_size, screen_x - self.cross_size,
                                         screen_y + self.cross_size, screen_x + self.cross_size,
                                         fill=self.board_color, outline=self.board_color)
-        # 生成交叉点
-        # 棋盘边缘的交叉点的x/y需设为0 其他情况就直接返回具体xyZ坐标
         hor_m, hor_n = [0, cross_scale] if y == 0 else [-cross_scale, 0] if y == config.GUI_BOARD_GRID - 1 else [
             -cross_scale, cross_scale]
         ver_m, ver_n = [0, cross_scale] if x == 0 else [-cross_scale, 0] if x == config.GUI_BOARD_GRID - 1 else [
             -cross_scale, cross_scale]
-        # 画横线
+        # draw row
         self.gui_board.create_line(screen_y + hor_m * self.cross_size, screen_x, screen_y + hor_n * self.cross_size,
                                    screen_x)
-        # 画竖线
+        # draw col
         self.gui_board.create_line(screen_y, screen_x + ver_m * self.cross_size, screen_y,
                                    screen_x + ver_n * self.cross_size)
 
-    # 画棋子
+    # Draw stone(s)
     def gui_draw_stone(self, x, y, current_stone_color):
         screen_x, screen_y = self.standard_size * (x + 1), self.standard_size * (y + 1)
         screen_x += 0.5 * self.standard_size
@@ -46,62 +44,72 @@ class GUI:
                                    fill=current_stone_color)
         # self.gui_board.create_text(screen_y, screen_x, text=(len(self.board_info.occupied_moves) - 4) + 1, fill='red')
 
-    # 画棋盘
+    # Draw board, including cross and, horizontal and vertical lines.
     def gui_draw_board(self):
         # 根据棋盘尺寸大小循环
         [self.gui_draw_cross(x, y) for y in range(config.GUI_BOARD_GRID) for x in
          range(config.GUI_BOARD_GRID)]
+        # By default, there are four cells occupied initially.
         self.gui_draw_stone(3, 3, 'white')
         self.gui_draw_stone(3, 4, 'black')
         self.gui_draw_stone(4, 4, 'white')
         self.gui_draw_stone(4, 3, 'black')
         # self.gui_draw_stone(0, 0, 'white')
 
-    # Human vs Human
+    """
+    Human vs Human mode
+    Once clicked, black stone is the first stone to be put.
+    """
     def gui_opt_human_start_btn(self):
         self.human_vs_human_mode = True
         self.who_first = 'player1'  # Player 1 go first, which represents black correspond to current_player_id = 1.
         self.allow_human_click = True
         self.gui_draw_board()  # 重置界面
-        self.turn_tips.config(text="黑棋回合")
+        self.turn_tips.config(text="Black Round")
         self.game.initialize_board_info(self.who_first)  # 即result_id或id=1为黑棋 反之=2为白棋
 
-    # Human vs AI
-    # 初始化界面信息（选择黑色）
+    """
+    Human vs AI mode
+    This mode is available only if a model is trained.
+    We can choose black/white side against AI trained; therefore, two buttons are click-allowed.
+    """
+    # Pick black side
     def gui_opt_black_btn(self):
         self.human_vs_human_mode = False
-        self.who_first = 'player1'  # 即设定玩家1为先手
+        self.who_first = 'player1'  # Let the player 1 goes first
         self.allow_human_click = True
-        self.gui_draw_board()  # 重置界面
-        self.turn_tips.config(text="黑棋回合")
+        self.gui_draw_board()  # Initialize board and visually
+        self.turn_tips.config(text="Black Round")
         self.game.initialize_board_info(who_first=self.who_first)
 
-    # 初始化界面信息（选择白色）
+    # Pick white side
     def gui_opt_white_btn(self):
         self.human_vs_human_mode = False
-        self.who_first = 'player2'  # 即设定玩家2为先手
+        self.who_first = 'player2'  # Let the player 2 goes first
         self.allow_human_click = False
-        self.gui_draw_board()  # 重置界面
-        self.turn_tips.config(text="黑棋回合")
+        self.gui_draw_board()  # Initialize board visually
+        self.turn_tips.config(text="Black Round")
         self.gui_board.update()
-        self.game.initialize_board_info(who_first=self.who_first)  # 人类选白棋， 初始化棋盘
-        current_player_id = self.game.get_current_player_id()  # 获取当前将要落子的玩家id
-        # 人类选择白棋按钮后,让电脑先走一步后再进入鼠标左键的绑定事件
-        if current_player_id == 2:  # 电脑的id都被设置为2
+        self.game.initialize_board_info(who_first=self.who_first)  # Initialize game (not GUI)
+        current_player_id = self.game.get_current_player_id()  # Get the player id who goes the next round
+        if current_player_id == 2:  # We always set the AI's id to 2
             AI = self.mcts_player
             move_id = AI.choose_move(self.game)
             gui_loc_y, gui_loc_x = self.game.move_2_location(move_id)
-            flips = self.gui_draw_flips('black', '白棋回合', gui_loc_y, gui_loc_x)
+            flips = self.gui_draw_flips('black', 'White Round', gui_loc_y, gui_loc_x)
             self.game.move(move_id, flips)
             self.gui_board.update()
-            self.turn_tips.config(text="白棋回合")
+            self.turn_tips.config(text="White Round")
             self.allow_human_click = True
 
-    # 棋局结束在canvas中间显示胜负提醒
+    # Draw the game result (Win, lose, draw ...)
     def gui_draw_center_result_text(self, text):
         width, height = int(self.gui_board['width']), int(self.gui_board['height'])
         self.gui_board.create_text(int(width / 2), int(height / 2), text=text, font=("黑体", 30, "bold"), fill="red")
 
+    """
+    For othello, flipping the stones from black/white to white/black is common.
+    """
     def gui_draw_flips(self, current_color, next_move_tip, gui_loc_y, gui_loc_x):
         flips = self.game.is_valid_move(current_color, gui_loc_y, gui_loc_x)
         if flips:
@@ -111,74 +119,69 @@ class GUI:
             self.turn_tips.config(text=next_move_tip)
         return flips
 
-    # 棋盘Canvas的click事件
+    # Event that clicks on the board
     def gui_click_board(self, event):
-        # 获取鼠标点击的canvas坐标并用int强制转化为网格坐标
+        # Convert the position clicked to the position of board
         gui_loc_y, gui_loc_x = int((event.y - self.cross_size - 0.5 * self.standard_size) / self.standard_size), int(
             (event.x - self.cross_size - 0.5 * self.standard_size) / self.standard_size)
-        if gui_loc_y >= 8 or gui_loc_x >= 8:  # 黑白棋 防止超出边界
+        if gui_loc_y >= 8 or gui_loc_x >= 8:  # Not allowed to click outside the boundary
             return
-        # 防止其他禁止情况却能落子
-        if not self.allow_human_click:
+        if not self.allow_human_click:  # Check if the human click is valid
             return
-        # 鼠标的点击坐标转化为 具体落子数字的格式
-        human_move = gui_loc_y * 8 + gui_loc_x
-        # 已经下过的地方不能再下
-        if human_move not in self.game.non_occupied_stones:
+        human_move = gui_loc_y * 8 + gui_loc_x  # Get the position of board according to event click
+        if human_move not in self.game.non_occupied_stones:  # Not allowed to click the cell occupied
             return
-        current_player_id = self.game.get_current_player_id()  # 当前将要落子的玩家id
+        current_player_id = self.game.get_current_player_id()  # Get the player id who goes the current round
 
-        # 双人对战:黑棋走子
+        # Human vs human: Black round
         if current_player_id == 1 and self.human_vs_human_mode is True:
-            # 人类选择的先后手判断
             current_color = 'black' if self.who_first == 'player1' else 'white'
-            next_move_tip = '白棋回合' if self.who_first == 'player1' else '黑棋回合'
+            next_move_tip = 'White Round' if self.who_first == 'player1' else 'Black Round'
             flips = self.gui_draw_flips(current_color, next_move_tip, gui_loc_y, gui_loc_x)
             if flips:
                 will_pass_flag = self.game.move(human_move, flips)
                 if will_pass_flag:
-                    self.turn_tips.config(text='白棋回合')
+                    self.turn_tips.config(text='White Round')
                     showinfo(title='Pass', message='White pass')
                     will_double_pass = self.game.move(-1)
-                    self.turn_tips.config(text='黑棋回合')
+                    self.turn_tips.config(text='Black Round')
                     if will_double_pass:
                         showinfo(title='Pass', message='Black pass')
                         self.game.move(-1)
             self.gui_board.update()
-            # 判断输赢
+            # check the result of the game
             status = self.game.get_game_status()  # 1 2 3 -1
             if status in (1, 2, 3):
                 self.gui_draw_game_result(status, mode='hh')
                 return
-        # 双人对战:白棋走子
+        # Human vs human: White round
         if current_player_id == 2 and self.human_vs_human_mode is True:
-            # 人类选择的先后手判断
             current_color = 'black' if self.who_first == 'player2' else 'white'
-            next_move_tip = '白棋回合' if self.who_first == 'player2' else '黑棋回合'
+            next_move_tip = 'White Round' if self.who_first == 'player2' else 'Black Round'
             flips = self.gui_draw_flips(current_color, next_move_tip, gui_loc_y, gui_loc_x)
             if flips:
                 will_pass_flag = self.game.move(human_move, flips)
                 if will_pass_flag:
-                    self.turn_tips.config(text='黑棋回合')
+                    self.turn_tips.config(text='Black Round')
                     showinfo(title='Pass', message='Black pass')
                     will_double_pass = self.game.move(-1)
-                    self.turn_tips.config(text='白棋回合')
+                    self.turn_tips.config(text='White Round')
                     if will_double_pass:
                         showinfo(title='Pass', message='White pass')
                         self.game.move(-1)
             self.gui_board.update()
             status = self.game.get_game_status()
+            # check the result of the game
             if status in (1, 2, 3):
                 self.gui_draw_game_result(status, mode='hh')
                 return
 
-        # Human vs AI (MCTS)
-        # Human turn
+        # Human vs AI (MCTS): Human turn
         pass_flag = True
-        while pass_flag:
+        while pass_flag and self.human_vs_human_mode is False:
             if current_player_id == 1 and not self.human_vs_human_mode:
                 current_color = 'black' if self.who_first == 'player1' else 'white'
-                next_move_tip = '白棋回合' if self.who_first == 'player1' else '黑棋回合'
+                next_move_tip = 'White Round' if self.who_first == 'player1' else 'Black Round'
                 if self.game.get_available_moves() == [-1]:
                     showinfo(title='Pass', message=f'{current_color} pass')
                     self.turn_tips.config(text=next_move_tip)
@@ -190,16 +193,17 @@ class GUI:
                     self.game.move(human_move, flips)
                 self.allow_human_click = False if self.human_vs_human_mode is False else True
                 self.gui_board.update()
+                # check the result of the game
                 status = self.game.get_game_status()  # 1 2 3 -1
                 if status in (1, 2, 3):
                     self.gui_draw_game_result(status, mode='ha')
                     return
 
-            # AI turn
+            # Human vs AI (MCTS): AI turn
             current_player_id = self.game.get_current_player_id()
             if current_player_id == 2 and not self.human_vs_human_mode:
                 current_color = 'white' if self.who_first == 'player1' else 'black'
-                next_move_tip = '黑棋回合' if self.who_first == 'player1' else '白棋回合'
+                next_move_tip = 'Black Round' if self.who_first == 'player1' else 'White Round'
                 if self.game.get_available_moves() == [-1]:
                     showinfo(title='Pass', message=f'{current_color} pass')
                     self.turn_tips.config(text=next_move_tip)
@@ -218,7 +222,7 @@ class GUI:
                     self.gui_draw_game_result(status, mode='ha')
                     return
 
-    # gui退出
+    # Exit the GUI
     @staticmethod
     def gui_quit_game():
         os._exit(1)
@@ -227,56 +231,62 @@ class GUI:
         self.allow_human_click = False
         text = self.gui_get_text_from_game_status(status=status, mode=mode)
         self.gui_draw_center_result_text(text)
-        self.turn_tips.config(text="等待中")
+        self.turn_tips.config(text="Waiting...")
 
+    """
+    Get the result of the game according to the mode chosen
+    """
     def gui_get_text_from_game_status(self, status, mode='hh'):
         text = None
         if mode == 'hh':
             if status == 1:
-                text = "黑棋获胜"
+                text = "Black wins!"
             elif status == 2:
-                text = "白棋获胜"
+                text = "White wins!"
             elif status == 3:
-                text = "平局"
+                text = "Draw"
             else:
                 text = "Error occured in {} status!".format(mode)
         elif mode == 'ha':
-            text = "电脑获胜" if status != 3 else "平局"
+            text = "AI wins!" if status != 3 else "Draw"
         else:
             text = 'Error occured in mode!'
         return text
 
-    # 界面
+    """
+    GUI
+    Define some basic properties.
+    Design the layout and structure of the board game GUI.
+    """
     def gui(self, mcts_player):
         self.board_size = config.GUI_BOARD_GRID
-        # 设置先手是玩家1还是玩家2（player?_obj)
-        self.mcts_player: MCTSPlayer = mcts_player
-        self.human_vs_human_mode = False  # 确定是人机对弈还是双人对战
-        # gui参数定义
-        sidebar_color = "Moccasin"  # 侧边栏颜色
-        btn_font = ("黑体", 12, "bold")  # 按钮文字样式
-        self.standard_size = 40  # 设置标准尺寸
-        self.board_color = "Tan"  # 棋盘颜色
-        self.cross_size = self.standard_size / 2  # 交叉轴大小
-        self.stone_size = self.standard_size / 3  # 棋子大小
-        self.allow_human_click = False  # 是否允许人类玩家点击棋盘
+        self.mcts_player: MCTSPlayer = mcts_player # AI (MCTS) player
+        self.human_vs_human_mode = False  # True for human vs human, while false for human vs AI
+        # GUI style
+        sidebar_color = "Moccasin"  # Color of the side bar
+        btn_font = ("Arial", 12, "bold")  # Button font style
+        self.standard_size = 40  # GUI window size
+        self.board_color = "Tan"  # GUI board color
+        self.cross_size = self.standard_size / 2  # Cross size
+        self.stone_size = self.standard_size / 3  # Stone size
+        self.allow_human_click = False
 
-        # gui初始化（tkinter)
+        # Create Tkinter
         root = Tk()
-        root.title("黑白棋")
-        root.resizable(width=False, height=False)  # 窗口大小不允许拉动
-        # 布局-定义
+        root.title("Othello")
+        root.resizable(width=False, height=False)  # Not allowed to drag the window to change its size.
+        # Layout design
         gui_sidebar = Frame(root, highlightthickness=0, bg=sidebar_color)
         gui_sidebar.pack(fill=BOTH, ipadx=10, side=RIGHT)  # ipadx 加宽度padding
-        btn_opt_black = Button(gui_sidebar, text="选择黑色", command=self.gui_opt_black_btn, font=btn_font)
-        btn_opt_white = Button(gui_sidebar, text="选择白色", command=self.gui_opt_white_btn, font=btn_font)
-        btn_opt_human_play_start = Button(gui_sidebar, text="开始游戏", command=self.gui_opt_human_start_btn, font=btn_font)
+        btn_opt_black = Button(gui_sidebar, text="Black side", command=self.gui_opt_black_btn, font=btn_font)
+        btn_opt_white = Button(gui_sidebar, text="White side", command=self.gui_opt_white_btn, font=btn_font)
+        btn_opt_human_play_start = Button(gui_sidebar, text="Start game", command=self.gui_opt_human_start_btn, font=btn_font)
         # self.btn_opt_human_play_save = Button(gui_sidebar, text="保存棋局", command=self.gui_opt_human_save_btn, font=btn_font, state=DISABLED)
-        btn_opt_quit = Button(gui_sidebar, text="退出游戏", command=self.gui_quit_game, font=btn_font)
-        self.turn_tips = Label(gui_sidebar, text="等待中", bg=sidebar_color, font=("黑体", 18, "bold"), fg="red4")
-        two_human_play_label = Label(gui_sidebar, text="双人对战", bg=sidebar_color, font=("楷体", 12, "bold"))
-        machine_man_play_label = Label(gui_sidebar, text="人机对战", bg=sidebar_color, font=("楷体", 12, "bold"))
-        # 布局-显示
+        btn_opt_quit = Button(gui_sidebar, text="Exit", command=self.gui_quit_game, font=btn_font)
+        self.turn_tips = Label(gui_sidebar, text="Waiting", bg=sidebar_color, font=("Arial", 18, "bold"), fg="red4")
+        two_human_play_label = Label(gui_sidebar, text="Human vs human", bg=sidebar_color, font=("Arial", 12, "bold"))
+        machine_man_play_label = Label(gui_sidebar, text="Human vs AI", bg=sidebar_color, font=("Arial", 12, "bold"))
+        # Show the layout
         two_human_play_label.pack(side=TOP, padx=20, pady=5)
         btn_opt_human_play_start.pack(side=TOP, padx=20, pady=10)
         # self.btn_opt_human_play_save.pack(side=TOP, padx=20, pady=10)
@@ -287,13 +297,14 @@ class GUI:
         self.turn_tips.pack(side=TOP, expand=YES, fill=BOTH, pady=10)
         self.gui_board = Canvas(root, bg=self.board_color, width=(config.GUI_BOARD_GRID + 1) * self.standard_size,
                                 height=(config.GUI_BOARD_GRID + 1) * self.standard_size, highlightthickness=0)
-        self.gui_draw_board()  # 初始化棋盘
+        self.gui_draw_board()  # Init board
         self.gui_board.pack()
-        self.gui_board.bind("<Button-1>", self.gui_click_board)  # 绑定左键事件
-        root.mainloop()  # 事件循环
+        self.gui_board.bind("<Button-1>", self.gui_click_board)  # Mouse event (left)
+        root.mainloop()  # Event loop
 
-    # 定义人机对战/电脑自我对弈训练
-
-    # 打开gui界面进行人机对战和双人对战
+    """
+    Open the GUI for 1. human vs human mode; 2. human vs AI mode
+    The Self-play, training and evaluation modules are run in training.py
+    """
     def start_game(self, mcts_player: MCTSPlayer):
         self.gui(mcts_player)
