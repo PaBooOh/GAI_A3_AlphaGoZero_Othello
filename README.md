@@ -1,7 +1,7 @@
 # Implmentation of the Othello based on AlphaGoZero
 ## Prerequisites
 Our program is entirely based on Python 3.x <br>
-The libraries we use to build neural networks and GUI are <u>Tkinter</u> and <u>Pytorch</u>, respectively
+The libraries we use to build neural networks and GUI are **Tkinter** and **Pytorch**, respectively
 ## Training
 To train game data collected, you need to
 ```
@@ -15,7 +15,7 @@ Once the training process stop and models are saved to local, you can open GUI t
 python startup.py
 ```
 ## GUI
-The graphical user interface is designed based on <u>Tkinter</u> in
+The graphical user interface is designed based on **Tkinter** in
 ```
 gui.py
 ```
@@ -40,7 +40,7 @@ config.py
 For example, you could change the learning rate, the number of times MCTS to be performed, the board size, etc, or determine whether to use Dirichlet noise...
 
 ## Network and model
-The definition of two neural networks <u>CNN</u> and <u>ResNet</u> are written in
+The definition of two neural networks **CNN** and **ResNet** are written in
 ```
 /network/convnet.py
 /network/resnet.py
