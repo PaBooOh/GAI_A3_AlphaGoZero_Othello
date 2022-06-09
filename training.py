@@ -112,7 +112,7 @@ class TrainModel:
                 data_extension.append(origin_one_state_data)
             # （2）Mirror
             mirror_state_planes = np.array([np.fliplr(one_plane) for one_plane in one_state])
-            mirror_pi = np.fliplr(np.flipud(np.reshape(mcts_pi, (board_size, board_size))))  # 先取反与state一致
+            mirror_pi = np.fliplr(np.flipud(np.reshape(mcts_pi, (board_size, board_size))))  # inverse
             for i in range(1, 5):
                 mirror_rot_state_planes = np.array([np.rot90(one_plane, k=i) for one_plane in mirror_state_planes])
                 mirror_rot_pi = np.rot90(mirror_pi, k=i)
@@ -198,7 +198,7 @@ class TrainModel:
             # else:
             #     print(">>The latest model is worse than the optimal model. Replacement is canceled.")
 
-# 开始训练
+# Start training
 if __name__ == '__main__':
     training_process = TrainModel(size=config.TRAIN_BOARD_SIZE, model_path=config.EXISTING_MODEL_PATH, net_type=config.TRAIN_WHICH_NET)
     # training_process.start_training()
