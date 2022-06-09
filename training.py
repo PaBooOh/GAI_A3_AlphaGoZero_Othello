@@ -52,6 +52,7 @@ class TrainModel:
             move_id = mcts_player.choose_move(self.game)  # Choose a real move based on MCTS that introduce neural network
             self.game.move(move_id)  # Update board information
             result_id = self.game.get_game_status()  # Check the game results (or status)
+            who_black = 'player2' if who_black == 'player1' else 'player1'
             # We set the result like: 1=latest model 2=optimal model 3=draw
             if result_id in (1, 2, 3):
                 return result_id
@@ -184,8 +185,21 @@ class TrainModel:
                 else:
                     print(">>The latest model is worse than the optimal model. Replacement is canceled.")
 
+    def models_battle(self):
+        if config.RUN_EVAL and os.path.exists(
+                config.SAVE_GOOD_MODEL_PATH):
+            print(">>>Start evaluating the latest model ...")
+            win_ratio = self.model_evaluate(latest_path=config.SAVE_LATEST_MODEL_PATH,
+                                            good_path=config.SAVE_GOOD_MODEL_PATH)
+            print('Win_ratio: ',win_ratio)
+            # if win_ratio >= config.EVAL_WIN_RATE_THRESHOLD:
+            #     self.net_func.save_model(config.SAVE_GOOD_MODEL_PATH)  # replacing the optimal one
+            #     print(">>>The latest model is better than the optimal model. Updated!")
+            # else:
+            #     print(">>The latest model is worse than the optimal model. Replacement is canceled.")
 
 # 开始训练
 if __name__ == '__main__':
     training_process = TrainModel(size=config.TRAIN_BOARD_SIZE, model_path=config.EXISTING_MODEL_PATH, net_type=config.TRAIN_WHICH_NET)
-    training_process.start_training()
+    # training_process.start_training()
+    training_process.models_battle()

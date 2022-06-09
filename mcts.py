@@ -144,9 +144,11 @@ class MCTSPlayer():
         """
         # Simulation
         expanded_nodes_probs, leaf_node_value = current_node.simulate(copy_game, self.model)  # Return the prior probability of each expanded (list), and a value ranging from -1 to 1 (float)
+        # print(len(list(expanded_nodes_probs)))
         # If game is not over
         if game_status == -1:
             # Expansion
+            # print(len(list(expanded_nodes_probs)))
             current_node.expand(expanded_nodes_probs, add_dirichlet=config.ADD_DIRICHLET_FOR_EXPANSION)
         # If game is over
         else:
