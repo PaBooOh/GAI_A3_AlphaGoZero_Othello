@@ -9,7 +9,7 @@ python training.py
 ```
 Here training and conducting self-play, are alternated.
 
-## Play
+## Playing
 Once the training process stop and models are saved to local, you can open GUI to play against yourself or against AI you trained. Since we have already provided two models using CNN and ResNet, you have no need to train from scratch if you just want to play against AI, using the following command
 ```
 python startup.py
