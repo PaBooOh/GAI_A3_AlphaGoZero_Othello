@@ -34,8 +34,8 @@ EPOCHS = 5
 SAVE_MODEL_FRENQUENCY = 20  # Save model when a certain figure for the game data collected is reached
 SELFPLAY_NUM = 100000  # Perform ? times self-play to collect data
 TRAIN_WHICH_NET = 'cnn'  # 'cnn' is short for classic convolutional neural network, while resnet is short for Residual network
-SAVE_LATEST_MODEL_PATH = 'model/cnn/latest.pt'  # the path the latest model is saved
-SAVE_GOOD_MODEL_PATH = 'model/cnn/optimal.pt'  # the path the optimal model is saved
+SAVE_LATEST_MODEL_PATH = 'model/cnn/othello_8x8/latest.pt'  # the path the latest model is saved
+SAVE_GOOD_MODEL_PATH = 'model/cnn/othello_8x8/optimal.pt'  # the path the optimal model is saved
 EXISTING_MODEL_PATH = SAVE_LATEST_MODEL_PATH  # Training based on previous model
 VISUAL_DATA_PATH = 'visual_data/cnn/'  # use tensorboard for recording loss and observe training process (Deprecated)
 
