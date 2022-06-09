@@ -201,5 +201,5 @@ class TrainModel:
 # Start training
 if __name__ == '__main__':
     training_process = TrainModel(size=config.TRAIN_BOARD_SIZE, model_path=config.EXISTING_MODEL_PATH, net_type=config.TRAIN_WHICH_NET)
-    # training_process.start_training()
-    training_process.models_battle()
+    training_process.start_training()
+    # training_process.models_battle()
