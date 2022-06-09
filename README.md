@@ -1,4 +1,4 @@
-# Implmentation of the Othello based on AlphaGoZero
+# Implmentation of Othello based on AlphaGoZero
 ## Prerequisites
 Our program is entirely based on Python 3.x <br>
 The libraries we use to build neural networks and GUI are **Tkinter** and **Pytorch**, respectively
